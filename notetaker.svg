@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="48"
+   height="48"
+   version="1"
+   id="svg268"
+   sodipodi:docname="notetaker.svg"
+   inkscape:version="1.4.2 (ebf0e940d0, 2025-05-08)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg">
+  <sodipodi:namedview
+     id="namedview1"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     showgrid="true"
+     inkscape:zoom="11.541667"
+     inkscape:cx="23.956679"
+     inkscape:cy="24"
+     inkscape:window-width="1366"
+     inkscape:window-height="682"
+     inkscape:window-x="0"
+     inkscape:window-y="0"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg268">
+    <inkscape:grid
+       id="grid1"
+       units="px"
+       originx="0"
+       originy="0"
+       spacingx="1"
+       spacingy="1"
+       empcolor="#0099e5"
+       empopacity="0.30196078"
+       color="#0099e5"
+       opacity="0.14901961"
+       empspacing="5"
+       enabled="true"
+       visible="true" />
+  </sodipodi:namedview>
+  <defs
+     id="defs272" />
+  <circle
+     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     id="path4401-6"
+     cx="24"
+     cy="25"
+     r="20" />
+  <circle
+     style="display:inline;fill:#c3d5f6;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     id="path4401"
+     cx="24"
+     cy="24"
+     r="20" />
+  <rect
+     style="fill:#7199f7;stroke-width:0;stroke-miterlimit:0;fill-opacity:1"
+     id="rect1"
+     width="44"
+     height="44"
+     x="2"
+     y="2"
+     rx="2"
+     ry="2" />
+  <rect
+     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     id="rect4722"
+     width="20"
+     height="27"
+     x="8"
+     y="14"
+     rx="2"
+     ry="2" />
+  <rect
+     style="fill:#ffffff;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     id="rect4722-9"
+     width="20"
+     height="27"
+     x="8"
+     y="13"
+     rx="2"
+     ry="2" />
+  <path
+     id="rect4722-4"
+     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     d="m 8,16 v -1 c 0,-1.107999 0.892001,-2 2,-2 h 16 c 1.107999,0 2,0.892001 2,2 v 1 c 0,-1.107999 -0.892001,-2 -2,-2 H 10 c -1.107999,0 -2,0.892001 -2,2 z" />
+  <path
+     style="color:#444444;display:inline;fill:#424242;fill-opacity:1;stroke-width:0.999997"
+     class="ColorScheme-Text"
+     d="m 38,8 h -1 l -3,3 5,5 3,-3 c 0,-0.333333 0,-0.666667 0,-1 z m -6,5 -12,12 v 4.999673 L 25,30 37,18 Z"
+     id="path1948" />
+</svg>
