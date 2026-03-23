@@ -1,0 +1,5 @@
+notetaker           usr/bin
+*.desktop           usr/share/applications
+*.svg               usr/share/icons/hicolor/scalable/apps
+config/*            usr/share/notetaker/
+
