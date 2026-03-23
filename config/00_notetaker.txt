@@ -1,0 +1,13 @@
+Notetaker is a basic tool to create and manage notes.
+
+⚫️ Select radio button to read and edit note
+⚫️ "✔️" Save Changes" after editing note
+⚫️ "➕️" create a new note
+⚫️ "➖️" delete selected note
+⚫️ "🖍️" rename selected note
+
+Notes are saved as txt files in ~/.config/MX-Linux/notetaker
+
+Notes support clickable urls https://forum.mxlinux.org/
+
+Copyright ©️ 2026 Melber, Released under GPL3

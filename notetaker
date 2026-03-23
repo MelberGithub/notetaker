@@ -43,7 +43,7 @@ fi
 notetaker_about() {
 
 #TRANSLATORS Text in About window
-text_about=$(gettext "A basic tool to create and manage notes.")
+text_about=$(gettext "Take and manage notes.")
 
 iconpath96="/usr/share/icons/hicolor/scalable/apps/notetaker96.svg"
 
@@ -137,7 +137,7 @@ yad --plug=$notetaker_key --tabnum=1 \
 --column=radio --column=name --print-column=2 \
 --select-action='bash -c "note_updatetext %s >$fpipe"' \
 --separator="" \
-${notetaker_checklist[@]} >/tmp/notetaker_name.txt &
+${notetaker_checklist[@]} >/dev/null &
 
 #--list --no-headers --file-op \
 #--column=name \

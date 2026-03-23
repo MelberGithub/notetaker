@@ -1,0 +1,11 @@
+[Desktop Entry]
+Encoding=UTF-8
+Name=Notetaker
+Comment=Take and manage notes
+Exec=notetaker
+Terminal=false
+Type=Application
+Icon=notetaker
+Categories=Office;
+NoDisplay=false
+NotShowIn=KDE
