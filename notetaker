@@ -1,14 +1,20 @@
 #!/bin/bash
-#mx-notetaker by Melber
+#Notetaker by Melber
 #License: GPL-3.0+
-notetaker_version=26.03.01
+notetaker_version=26.04.01
 
 #export TEXTDOMAINDIR=/usr/share/locale
 #export TEXTDOMAIN="xxx"
 #source gettext.sh
 
+#variables
+title="$(gettext 'Notetaker')"
+class="notetaker"
+iconpath="/usr/share/icons/hicolor/scalable/apps/notetaker.svg"
 
-#check for wayland
+
+### check for wayland ###
+
 if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
 #TRANSLATORS warning message that tool doesn't work with wayland
     wayland_text_1="$(gettext 'Sorry, this tool is not available when running a wayland session.')"
@@ -21,25 +27,86 @@ if [ "$XDG_SESSION_TYPE" = "wayland" ]; then
     exit
 fi
 
+### set up ###
 
 #define paths
-export notetaker_path=$HOME/.config/MX-Linux/notetaker
+export notetaker_configpath="$HOME/.config/MX-Linux/notetaker"
 
 
-#set up 
-if [ ! -d $notetaker_path ]; then
-    cp -r /usr/share/notetaker $notetaker_path
+#set up .conf
+if [ ! -d "$notetaker_configpath" ]; then
+    cp -r /usr/share/notetaker "$notetaker_configpath"
+fi
+
+#get config
+source "$notetaker_configpath/notetaker.conf"
+
+if [ -z "$notetaker_savepath" ]; then
+    cat <<EOF > "$notetaker_configpath/notetaker.conf"
+notetaker_savepath="$notetaker_configpath"
+notetaker_lastnote="$notetaker_lastnote"
+notetaker_geometry="750x400+0+0"
+notetaker_editbg="#F6F1B2"
+EOF
+    source "$notetaker_configpath/notetaker.conf"
+fi
+
+export notetaker_savepath
+export notetaker_editbg
+
+
+#user to select where notes are saved
+if [ "$notetaker_savepath" = "$notetaker_configpath" ]; then
+
+    notetaker_savepath_old="$notetaker_savepath"
+
+    text_savepath1=$(gettext "Where do you want to save your notes?")
+    text_savepath2=$(gettext "(Click the folder icon to chose a directory)")
+
+    notetaker_savepath_new=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
+    --width=400 --height=200 --fixed --separator="" \
+    --text="\n<b>$text_savepath1</b>\n$text_savepath2\n" --text-align=center \
+    --form \
+    --field=" ":CDIR "$HOME" \
+    --button="yad-ok" )
+    
+    if [ "$?" = "0" ]; then
+
+        sed -i "s|$notetaker_savepath_old|$notetaker_savepath_new|" $notetaker_configpath/notetaker.conf
+
+        if [ ! -d "$notetaker_savepath_new" ]; then
+            mkdir -p "$notetaker_savepath_new"
+        fi
+
+        notetaker_oldnotecheck=$(find "$notetaker_savepath_old" -name "*.txt")
+
+        if [ -n "$notetaker_oldnotecheck" ]; then
+            find "$notetaker_savepath_old" -name "*.txt" -exec cp '{}' "$notetaker_savepath_new" \;
+        fi
+    
+    else
+        exit 0
+    fi
+
 fi
 
 
-#get last open note
-if [ -f $notetaker_path/notetaker.conf ]; then
-    source $notetaker_path/notetaker.conf
-    echo $notetaker_lastnote > /tmp/notetaker_name.txt
+#last open note
+echo "$notetaker_lastnote" > /tmp/notetaker_name.txt
+
+#in case geometry empty
+if [ -z "$notetaker_geometry" ]; then
+    export notetaker_geometry="700x500+0+0"
 fi
 
+#in case bg color empty
+if [ -z "$notetaker_editbg" ]; then
+    export notetaker_editbg="#F6F1B2"
+fi 
+    
 
-# about window
+
+### about window ###
 notetaker_about() {
 
 #TRANSLATORS Text in About window
@@ -56,58 +123,194 @@ yad --about --class="$class" --window-icon="$iconpath" \
 --website="https://mxlinux.org/" \
 --copyright="Copyright (c) 2026 Melber" \
 --authors="Melber,MX Devs" \
---license="GPL3" \
-
+--license="GPL3"
 }
 
 export -f notetaker_about
 
-#Set up pipe
-export fpipe="$(mktemp -u --tmpdir notetaker.XXXXXXXX)"
-mkfifo "$fpipe"
-trap "rm "$fpipe"" EXIT
-exec 3<> "$fpipe"
 
-#function
+### settings window ###
+notetaker_settings() {
+
+source "$notetaker_configpath/notetaker.conf"
+
+#TRANSLATORS Settings window text
+settings_text_savedir="$(gettext 'Save notes in')"
+#TRANSLATORS Settings window text
+settings_text_editbg="$(gettext 'Background color of note in edit mode')"
+
+
+settings_output=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
+--width=400 --height=200 --fixed --separator="|" \
+--borders=10 --form --columns=1 --align=left \
+--field="<b>$settings_text_savedir</b>":LBL " " \
+--field="":CDIR "$notetaker_savepath" \
+--field="":LBL "" \
+--field="<b>$settings_text_editbg</b>":LBL "" \
+--field="":CLR "$notetaker_editbg" \
+--button="yad-ok" --button="yad-cancel")
+
+
+if [ $? -eq 0 ]; then
+    savepath_new=$(echo "$settings_output" | cut -d'|' -f2)
+#    new_font_read=$(echo "$settings_output" | cut -d'|' -f2)
+    editbg_new=$(echo "$settings_output" | cut -d'|' -f5)
+    
+    notetaker_selection=$(cat /tmp/notetaker_name.txt)
+
+# Update the config file
+cat <<EOF > "$notetaker_configpath/notetaker.conf"
+notetaker_savepath="$savepath_new"
+notetaker_lastnote="$notetaker_selection"
+notetaker_geometry="$notetaker_geometry"
+notetaker_editbg="$editbg_new"
+EOF
+
+# If path changed, move the files
+    if [ "$notetaker_savepath" != "$savepath_new" ]; then
+        mkdir -p "$savepath_new"
+    
+
+    #TRANSLATORS Dialog text    
+        text_savepath3=$(gettext "Move or copy existing notes to new directory?")
+    #TRANSLATORS Button text
+        BTN_MOVE="$(gettext 'Move notes')" ; BTN_MOVE+='!edit-move!'
+    #TRANSLATORS Button text
+        BTN_COPY="$(gettext 'Copy notes')" ; BTN_COPY+='!edit-copy!'
+
+        yad --title="$title" --class="$class" --window-icon="$iconpath" \
+        --width=400 --height=200 --fixed --separator="" \
+        --text="\n<b>$text_savepath3</b>\n" --text-align=center \
+        --button="yad-no":30 --button="$BTN_MOVE":32 --button="$BTN_COPY":34
+
+        case "$?" in
+            32)
+                find "$notetaker_savepath" -name "*.txt" -exec mv '{}' "$savepath_new" \;
+            ;;
+                
+            34)        
+                find "$notetaker_savepath" -name "*.txt" -exec cp '{}' "$savepath_new" \;
+            ;;
+                
+            252 )
+                exit 0
+            ;;
+        esac
+    fi
+    
+    exec "$0" 
+fi
+
+}
+
+export -f notetaker_settings
+
+
+##########
+#get window geometry
+
+get_geometry(){
+
+win_geo=$(xdotool getactivewindow)
+
+    eval $(xwininfo -id "$win_geo" | \
+        sed -n -e 's/^ \+Width: \+\([0-9]\+\).*/W=\1/p' \
+               -e 's/^ \+Height: \+\([0-9]\+\).*/H=\1/p' \
+               -e 's/^ \+Absolute upper-left X: \+\([0-9]\+\).*/X=\1/p' \
+               -e 's/^ \+Absolute upper-left Y: \+\([0-9]\+\).*/Y=\1/p')
+             
+extents=$(xprop _NET_FRAME_EXTENTS -id "$win_geo" | grep "NET_FRAME_EXTENTS" | cut -d '=' -f 2 | tr -d ' ')
+bl=$(echo $extents | cut -d ',' -f 1) # width of left border
+br=$(echo $extents | cut -d ',' -f 2) # width of right border
+t=$(echo $extents | cut -d ',' -f 3)  # height of title bar
+bb=$(echo $extents | cut -d ',' -f 4) # height of bottom border
+
+let x_pos=$X-$bl
+let y_pos=$Y-$t
+let window_width=$W+$bl+$br
+let window_height=$H+$t+$bb
+
+echo ""$window_width"x"$window_height"+"$x_pos"+"$y_pos"" > /tmp/geometry.txt
+
+}
+
+export -f get_geometry
+##########
+
+
+### function edit note ###
+
+edit_note() {
+
+yad --title="$title" --class="$class" --window-icon="$iconpath" \
+--text-info --wrap --margins=10 --back="$notetaker_editbg" --editable --in-place \
+--geometry=450x400+650+0 \
+--fontname="Liberation Mono 11" \
+--filename="$notetaker_savepath/$2.txt" \
+--button=yad-ok
+
+echo -e "\f" >$fpipe
+echo "$(cat $notetaker_savepath/$2.txt)" >$fpipe
+
+}
+
+export -f edit_note
+
+
+### function update note text in text-info pane ###
+
 note_updatetext() {
-echo -e "\f"
-
-    #echo "$1 $2" > /tmp/check
-
-    #echo $1 > /tmp/notetaker_name.txt
-    #note_newtext=$(cat $notetaker_path/$1.txt)
-    echo $2 > /tmp/notetaker_name.txt
-    note_newtext=$(cat $notetaker_path/$2.txt)
+    get_geometry
+    echo -e "\f"
+    source "$notetaker_configpath/notetaker.conf"
+    echo "$2" > /tmp/notetaker_name.txt
+    note_newtext=$(cat "$notetaker_savepath/$2.txt")
     echo "$note_newtext"
 }
 
 export -f note_updatetext
 
 
-#function
+# Set up pipe
+export fpipe="$(mktemp -u --tmpdir notetaker.XXXXXXXX)"
+mkfifo "$fpipe"
+trap "rm "$fpipe"" EXIT
+exec 3<> "$fpipe"
+
+
+#get last open note
+source "$notetaker_configpath/notetaker.conf"
+notetaker_name=$notetaker_lastnote
+firsttext=$(cat "$notetaker_savepath/$notetaker_name.txt")
+echo "$firsttext" > "$fpipe"
+
+
+
+### MAIN FUNCTION ###
+
 run_notetaker() {
 
-#get list of notes
 unset notetaker_list
 unset notetaker_checklist
-unset notetaker_selection
+unset tab_labels
 
 
-cd $notetaker_path
-notetaker_list=$(ls *.txt | sed -e 's/.txt//g')
+# make note list
+
+notetaker_list=$(find "$notetaker_savepath" -type f -name '*.txt' | sed -e 's/.txt//g' | sed -e "s|$notetaker_savepath\/||" | sort -f)
+
 
 #in case no notes exist
 if [ -z "$notetaker_list" ]; then
- touch $notetaker_path/new-note.txt
+ echo '<b>New note</b>' > "$notetaker_savepath/new-note.txt"
  notetaker_list=new-note
 fi
 
 #covert list to array
 notetaker_list=($notetaker_list)
-
 notetaker_selection=$(cat /tmp/notetaker_name.txt)
 
-if [ ! -f "$notetaker_path/$notetaker_selection.txt" ]; then
+if [ ! -f "$notetaker_savepath/$notetaker_selection.txt" ]; then
     notetaker_selection="${notetaker_list[0]}"
 fi
 
@@ -122,91 +325,77 @@ done
 
 
 
-note_content=$(cat $notetaker_path/$notetaker_selection.txt)
+### yad ###
 
-echo "$note_content" > $fpipe
-
-# yad
 notetaker_key=$RANDOM
 
-#TRANSLATORS Main window label
-text_list="$(gettext 'Saved Notes')"
-
 yad --plug=$notetaker_key --tabnum=1 \
---list --radiolist --no-headers \
---column=radio --column=name --print-column=2 \
+--list --radiolist --no-headers --separator="" \
+--column=radio --column=notename --print-column=2 \
 --select-action='bash -c "note_updatetext %s >$fpipe"' \
---separator="" \
-${notetaker_checklist[@]} >/dev/null &
+--dclick-action='bash -c "edit_note %s"' \
+${notetaker_checklist[@]} >/tmp/notetaker_name.txt &
 
-#--list --no-headers --file-op \
-#--column=name \
 
 yad --plug=$notetaker_key --tabnum=2 \
---editable --wrap --margins=10 --show-cursor --fontname="Liberation Mono Regular 11" \
---show-uri --uri-color=#0085FF --formatted \
---text-info=<&3   >/tmp/notetaker_output.txt &
-#--css="* {color: #ff0000;}" \
+--text-info --wrap --margins=10 --formatted \
+--fontname="Liberation Sans 12" \
+<&3 &
 
 
-#variables
-title="$(gettext 'Notetaker')"
-class="mx-notetaker"
-iconpath="/usr/share/icons/hicolor/scalable/apps/notetaker.svg"
-
-#buttons
 
 #TRANSLATORS Button text
-BTN_RENAME='!edit-rename!rename note'
+BTN_ABOUT='!help-about!About'
 #TRANSLATORS Button text
-BTN_DELETE='!list-remove!delete note'
+BTN_SETTINGS='!settings!Change notes directory'
 #TRANSLATORS Button text
-BTN_NEW='!list-add!new note'
+BTN_RENAME='!document-replace!Rename note'
+#TRANSLATORS Button text
+BTN_DELETE='!entry-delete!Delete note'
+#TRANSLATORS Button text
+BTN_NEW='!entry-new!New note'
 #TRANSLATORS Button text
 BTN_SAVE="$(gettext 'Save Changes')" ; BTN_SAVE+='!gtk-save!Save changes'
 #TRANSLATORS Button text
-BTN_CLOSE="$(gettext 'Close')" ; BTN_CLOSE+='!window-close!'
+BTN_READ="$(gettext 'Read mode')" ; BTN_READ+='!view-readermode!Read note'
 #TRANSLATORS Button text
-BTN_ABOUT='!help-about!about'
+BTN_EDIT="$(gettext 'Edit note')" ; BTN_EDIT+='!edit!Edit note'
+#TRANSLATORS Button text
+BTN_CLOSE="$(gettext 'Close')" ; BTN_CLOSE+='!window-close!'
 
-yad --paned --key=$notetaker_key --orient=horiz --splitter=175 \
---title="$title" --class="$class" --window-icon="$iconpath" \
---borders=10 --geometry=650x400+20+20 --buttons-layout=spread \
---separator="" \
---button="${BTN_ABOUT}":18 \
+
+#--print-xid="$XID_FILE" \
+
+yad --title="$title" --class="$class" --window-icon="$iconpath" --key=$notetaker_key \
+--paned --orient=horiz --splitter=176 --geometry="$notetaker_geometry" \
+--buttons-layout=spread \
+--button="${BTN_ABOUT}":20 \
+--button="${BTN_SETTINGS}":18 \
 --button="${BTN_RENAME}":16 \
 --button="${BTN_DELETE}":14 \
 --button="${BTN_NEW}":12 \
---button="${BTN_SAVE}":10  \
---button="${BTN_CLOSE}":0  \
+--button="${BTN_CLOSE}":2
+
+ret=$?
 
 
-case $? in
-#save
-    10)
-        notetaker_selection=$(cat /tmp/notetaker_name.txt)
-        
-        if [ ! -d $notetaker_path/backup ]; then
-            mkdir $notetaker_path/backup
-        fi
-        
-        mv -f $notetaker_path/$notetaker_selection.txt $notetaker_path/backup/$notetaker_selection.bak
-        mv -f /tmp/notetaker_output.txt $notetaker_path/$notetaker_selection.txt
-    ;;
+case $ret in
 
 #new
     12)
+        #TRANSLATORS Window text for creating a new note
         text_new="$(gettext 'Name of new note')"
         
         new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
-        --geometry=200x100+95+70 --separator="" \
-        --form --field="$text_new" "" \
-        --button="yad-ok" )
+       --width=400 --height=200 --fixed --separator="" \
+       --text="\n<b>$text_new</b>\n" --text-align=center \
+       --form --field="" "new-note" \
+       --button="yad-ok" )
         
         new_name=$(echo $new_name | sed -e 's/ /_/g')
-#####        
-        while [ -f $notetaker_path/$new_name.txt ]; do
-    
+        
+        while [ -f "$notetaker_savepath/$new_name.txt" ]; do
+
             #TRANSLATORS Existing theme name window text line 1
     	    text_overwrite1="$(gettext 'A note with this name already exists.')"
     	    #TRANSLATORS Existing theme name button
@@ -215,51 +404,65 @@ case $? in
         	btn_savediff="$(gettext 'Choose a different name')"
 
             yad --title="$title" --class="$class" --window-icon="$iconpath" \
-            --geometry=200x100+95+70 --fixed \
+            --width=400 --height=200 --fixed --separator="" \
             --text="$text_overwrite1\n" \
             --text-align=center --borders=20 \
             --button="$btn_overwrite $new_name":2 --button="$btn_savediff":3
 
             case $? in
 
-            2) rm $notetaker_path/$new_name.txt   ;;
-
+            2)
+                rm "$notetaker_savepath/$new_name.txt"    
+            ;;
+  
             3) 
-            new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
-            --geometry=200x100+95+70 --separator="" \
-            --form --field="$text_new" "" \
-            --button="yad-ok" )
-        
-            new_name=$(echo $new_name | sed -e 's/ /_/g')
+                new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
+                --width=400 --height=200 --fixed --separator="" \
+                --form --field="$text_new" "" \
+                --button="yad-ok" )
+    
+               new_name=$(echo $new_name | sed -e 's/ /_/g')
             ;;
             
-            252) exit 0    ;;
-
+            252)
+               newname_ok=false   
+            ;;
             esac
         done    
-#####
-        echo 'new note' > $notetaker_path/$new_name.txt
-        echo $new_name > /tmp/notetaker_name.txt    
+
+    if [ -n "$new_name" ]; then
+        echo "$new_name" > "$notetaker_savepath/$new_name".txt
+        echo "$new_name" > /tmp/notetaker_name.txt
+        echo -e "\f" >$fpipe
+        echo "$(cat $notetaker_savepath/$new_name.txt)" >$fpipe
+    fi
+
     ;;
     
 #delete
     14)
-        notetaker_selection=$(cat /tmp/notetaker_name.txt)
-        rm -f $notetaker_path/$notetaker_selection.txt
+        notetaker_name=$(cat /tmp/notetaker_name.txt)
+        rm -f "$notetaker_savepath/$notetaker_name.txt"
+        echo -e "\f" >$fpipe
     ;;
     
 #rename
     16)
-        text_rename="$(gettext 'New name of note')"
+        notetaker_name=$(cat /tmp/notetaker_name.txt)
+        
+        text_rename="$(gettext 'Rename note as')"
         
         new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
-        --geometry=200x100+95+70 --separator="" \
-        --form --field="$text_rename" "" \
+        --width=400 --height=200 --fixed --separator="" \
+        --text="\n<b>$text_rename</b>\n" --text-align=center \
+        --form --field="" "$notetaker_name" \
         --button="yad-ok" )
         
-        new_name=$(echo $new_name | sed -e 's/ /_/g')
-#####        
-        while [ -f $notetaker_path/$new_name.txt ]; do
+        new_name=$(echo "$new_name" | sed -e 's/ /_/g')
+        
+        rename_ok=true
+       
+        while [ -f "$notetaker_savepath/$new_name.txt" ]; do
     
             #TRANSLATORS Existing theme name window text line 1
     	    text_overwrite1="$(gettext 'A note with this name already exists.')"
@@ -269,58 +472,107 @@ case $? in
         	btn_savediff="$(gettext 'Choose a different name')"
 
             yad --title="$title" --class="$class" --window-icon="$iconpath" \
-            --geometry=200x100+95+70 --fixed \
+            --width=400 --height=200 --fixed --separator="" \
             --text="$text_overwrite1\n" \
             --text-align=center --borders=20 \
             --button="$btn_overwrite $new_name":2 --button="$btn_savediff":3
+            
+            ret_rename=$?
 
-            case $? in
-
-            2) rm $notetaker_path/$new_name.txt   ;;
+            case "$ret_rename" in
+            2)
+                if [ -n "$new_name" ] && [ "$new_name" != "$notetaker_name" ]; then
+                    rm "$notetaker_savepath/$new_name.txt"
+                fi  
+            ;;
 
             3) 
-            new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
-            --geometry=200x100+95+70 --separator="" \
-            --form --field="$text_new" "" \
-            --button="yad-ok" )
+                new_name=$(yad --title="$title" --class="$class" --window-icon="$iconpath" \
+                --width=400 --height=200 --fixed --separator="" \
+                --text="\n<b>$text_rename</b>\n" --text-align=center \
+                --form --field="" "$new_name" \
+                --button="yad-ok" )
         
-            new_name=$(echo $new_name | sed -e 's/ /_/g')
+                new_name=$(echo $new_name | sed -e 's/ /_/g')
             ;;
             
-            252) exit 0    ;;
-
+            252)
+                rename_ok=false
+            ;;
             esac
         done    
-#####
-        notetaker_selection=$(cat /tmp/notetaker_name.txt)
-        mv  $notetaker_path/$notetaker_selection.txt $notetaker_path/$new_name.txt
-        echo $new_name > /tmp/notetaker_name.txt  
+
+    if [ -n "$new_name" ]; then
+#        notetaker_name=$(cat /tmp/notetaker_name.txt)
+        mv "$notetaker_savepath/$notetaker_name".txt "$notetaker_savepath/$new_name".txt
+        echo "$new_name" > /tmp/notetaker_name.txt
+        
+        echo -e "\f" >$fpipe
+        echo "$(cat $notetaker_savepath/$new_name.txt)" >$fpipe
+    fi
+    
     ;;
 
-#about
+#settings
     18)
-        notetaker_about
+        notetaker_settings
+    ;;
+
+
+#about
+    20)
+        notetaker_about &
     ;;
        
 #close
-    0 | 252)
+    2 | 252)
         alldone="yep"
     ;;
 
 esac
-#exec 3>&-
+
 }
 
+export -f run_notetaker
 
 #loop
 until [ "$alldone" = "yep" ]; do
+    
     run_notetaker
+
 done
 
 #all done
-notetaker_selection=$(cat /tmp/notetaker_name.txt)
-echo "notetaker_lastnote=$notetaker_selection" > $notetaker_path/notetaker.conf
 
-rm -f /tmp/notetaker_name.txt /tmp/notetaker_output.txt
+notetaker_selection=$(cat /tmp/notetaker_name.txt)
+
+if [ -z "$notetaker_selection" ]; then
+    notetaker_selection=$notetaker_lastnote
+fi
+
+notetaker_geometry=$(cat /tmp/geometry.txt)
+
+if [ -z "$notetaker_geometry" ]; then
+    notetaker_geometry=750x400+0+0
+fi
+
+
+
+# Update the config file
+cat <<EOF > "$notetaker_configpath/notetaker.conf"
+notetaker_savepath="$notetaker_savepath"
+notetaker_lastnote="$notetaker_selection"
+notetaker_geometry="$notetaker_geometry"
+notetaker_editbg="$notetaker_editbg"
+EOF
+
+
+# Clean up temp files
+rm -f /tmp/notetaker_name.txt /tmp/notetaker_output.txt /tmp/notetaker_checklist.txt
+
+if [ -n "$notetaker_selection" ]; then
+    rm -f /tmp/geometry.txt
+fi
 
 exit 0
+
