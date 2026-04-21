@@ -8,36 +8,37 @@
    xmlns:svg="http://www.w3.org/2000/svg">
   <defs
      id="defs272" />
-  <circle
-     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
-     id="path4401-6"
-     cx="48"
-     cy="50"
-     r="40" />
-  <circle
-     style="display:inline;fill:#c3d5f6;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
-     id="path4401"
-     cx="48"
-     cy="48"
-     r="40" />
   <rect
-     style="fill:#7199f7;fill-opacity:1;stroke-width:0;stroke-miterlimit:0"
+     style="display:inline;opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:0"
+     id="rect2475"
+     width="88"
+     height="88"
+     x="4"
+     y="6"
+     rx="4"
+     ry="4" />
+  <rect
+     style="display:inline;fill:#ffa339;fill-opacity:1;stroke-width:0;stroke-miterlimit:0"
      id="rect1"
      width="88"
      height="88"
      x="4"
      y="4"
-     rx="2"
-     ry="2" />
+     rx="4"
+     ry="4" />
+  <path
+     id="rect2475-9"
+     style="display:inline;opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:0"
+     d="M 8,4 C 5.784002,4 4,5.7840022 4,8 v 2 C 4,7.7840022 5.784002,6 8,6 h 80 c 2.215998,0 4,1.7840022 4,4 V 8 C 92,5.7840022 90.215998,4 88,4 Z" />
   <rect
-     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     style="display:inline;opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
      id="rect4722"
      width="40"
      height="54"
      x="16"
      y="28"
-     rx="2"
-     ry="2" />
+     rx="4"
+     ry="4" />
   <rect
      style="fill:#ffffff;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
      id="rect4722-9"
@@ -45,15 +46,20 @@
      height="54"
      x="16"
      y="26"
-     rx="2"
-     ry="2" />
+     rx="4"
+     ry="4" />
   <path
      id="rect4722-4"
-     style="opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
+     style="display:inline;opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0;stroke-miterlimit:2;paint-order:markers fill stroke"
      d="m 16,32 v -2 c 0,-2.215998 1.784002,-4 4,-4 h 32 c 2.215998,0 4,1.784002 4,4 v 2 c 0,-2.215998 -1.784002,-4 -4,-4 H 20 c -2.215998,0 -4,1.784002 -4,4 z" />
   <path
+     id="path2945"
+     style="color:#444444;display:inline;opacity:0.2;fill:#000000;fill-opacity:1;stroke-width:0.999998"
+     class="ColorScheme-Text"
+     d="M 78.496094,15.945844 A 7.072,7.072 0 0 0 74,18.000531 l -6,6.000001 10,10 6,-6 A 7.072,7.072 0 0 0 84,18.000531 7.072,7.072 0 0 0 78.496094,15.945844 Z M 64,28.000532 l -24,24 v 10 h 10 l 24,-24 z" />
+  <path
+     id="path1948"
      style="color:#444444;display:inline;fill:#424242;fill-opacity:1;stroke-width:0.999998"
      class="ColorScheme-Text"
-     d="m 76,16 h -2 l -6,6 10,10 6,-6 c 0,-0.666666 0,-1.333334 0,-2 z M 64,26 40,50 v 9.999346 L 50,60 74,36 Z"
-     id="path1948" />
+     d="M 78.496094,13.945312 A 7.072,7.072 0 0 0 74,16 l -6,6 10,10 6,-6 A 7.072,7.072 0 0 0 84,16 7.072,7.072 0 0 0 78.496094,13.945312 Z M 64,26 40,50 V 60 H 50 L 74,36 Z" />
 </svg>
