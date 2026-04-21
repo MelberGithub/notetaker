@@ -1,13 +1,17 @@
-Notetaker is a basic tool to create and manage notes.
 
-⚫️ Select radio button to read and edit note
-⚫️ "✔️" Save Changes" after editing note
-⚫️ "➕️" create a new note
-⚫️ "➖️" delete selected note
-⚫️ "🖍️" rename selected note
+⚫️ Select a note in the list to read.
+⚫️ Double click a note in the list to open it in an edit window.
+⚫️ Hover over buttons for tooltips.
 
-Notes are saved as txt files in ~/.config/MX-Linux/notetaker
+Notetaker supports pango markup formatting.
+-	<b>bold text</b>
+-	<i>italic text</i>
+-	<u>underlined text</u>
+-	<s>strikethrough text</s>
+-	<span foreground="#ff0000">coloured text</span>
+-	<span background="#ffff00">highlighted text</span>
+-	<big>BIG text</big>
+-	<small>small text</small>
+-	<tt>monospace font text</tt>
 
-Notes support clickable urls https://forum.mxlinux.org/
-
-Copyright ©️ 2026 Melber, Released under GPL3
+Notes are saved as .txt files in the selected directory.
